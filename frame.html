@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rollin 프레임 미리보기</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+
+    .scrollable-area {
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .frame-block {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      position: relative;
+      width: 400px;
+      height: 3260px;
+      margin: 20px auto;
+      background-color: #fff;
+    }
+
+    .photo-wrapper {
+      position: absolute;
+      overflow: hidden;
+      z-index: 20;
+      background: #eee;
+      cursor: grab;
+    }
+
+    .photo-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .photo-slot {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 50%;
+      display: block;
+    }
+
+    .frameOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .customText {
+      position: absolute;
+      top: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 11;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 1px 1px 3px black;
+      pointer-events: none;
+    }
+
+    input[type="file"], input[type="text"], button, label {
+      margin: 10px 5px;
+    }
+
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #e0e0e0;
+    }
+
+    select {
+      padding: 8px;
+      font-size: 16px;
+      margin: 20px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    /* 디버깅용 스타일 */
+    .photo-slot {
+      border: 1px dashed #999;
+    }
+
+    /* 추가된 스타일 */
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .upload-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    .engraving-section {
+      text-align: center;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .engraving-section label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .engraving-section input[type="text"] {
+      margin-top: 10px;
+      padding: 8px;
+      width: 300px;
+      text-align: center;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+</head>
+<body>
+  <h2>Rollin the Memory - 프레임 미리보기</h2>
+  
+  <select id="frameCountSelect" onchange="generateFrames()">
+    <option value="">몇 개 주문하시겠습니까?</option>
+    <option value="1">1개</option>
+    <option value="2">2개</option>
+    <option value="3">3개</option>
+    <option value="4">4개</option>
+    <option value="5">5개</option>
+  </select>
+
+  <div id="frameContainer" class="scrollable-area"></div>
+
+  <script>
+    function generateFrames() {
+      const count = parseInt(document.getElementById('frameCountSelect').value);
+      const container = document.getElementById('frameContainer');
+      container.innerHTML = ''; // 기존 내용 초기화
+
+      for (let i = 1; i <= count; i++) {
+        const frameBlock = document.createElement('div');
+        frameBlock.className = 'frame-block';
+        frameBlock.innerHTML = `
+          <h3>프레임 ${i}</h3>
+          <div class="upload-container">
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 1, this)" id="fileInput${i}_1" />
+              <button onclick="resetImage(${i}, 1)">초기화</button>
+            </div>
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 2, this)" id="fileInput${i}_2" />
+              <button onclick="resetImage(${i}, 2)">초기화</button>
+            </div>
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 3, this)" id="fileInput${i}_3" />
+              <button onclick="resetImage(${i}, 3)">초기화</button>
+            </div>
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 4, this)" id="fileInput${i}_4" />
+              <button onclick="resetImage(${i}, 4)">초기화</button>
+            </div>
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 5, this)" id="fileInput${i}_5" />
+              <button onclick="resetImage(${i}, 5)">초기화</button>
+            </div>
+            <div class="input-group">
+              <input type="file" accept="image/*" onchange="loadImage(${i}, 6, this)" id="fileInput${i}_6" />
+              <button onclick="resetImage(${i}, 6)">초기화</button>
+            </div>
+          </div>
+          <div class="engraving-section">
+            <label>
+              <input type="checkbox" onchange="toggleEngraving(${i}, this.checked)" />
+              각인을 추가하시겠습니까?
+            </label>
+            <input type="text" id="engraving${i}" 
+              placeholder="각인할 문구 입력" 
+              style="display:none;" 
+              oninput="updateEngravingText(${i}, this.value)" />
+          </div>
+          <div class="container">
+            <div class="photo-wrapper" style="top:183px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_1">
+            </div>
+            <div class="photo-wrapper" style="top:641px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_2">
+            </div>
+            <div class="photo-wrapper" style="top:1099px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_3">
+            </div>
+            <div class="photo-wrapper" style="top:1557px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_4">
+            </div>
+            <div class="photo-wrapper" style="top:2015px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_5">
+            </div>
+            <div class="photo-wrapper" style="top:2473px; left:65px; width:270px; height:436px;">
+              <img class="photo-slot" id="photo${i}_6">
+            </div>
+            <div id="customText${i}" class="customText">각인 위치</div>
+            <img class="frameOverlay" src="frame.png" />
+          </div>
+        `;
+        container.appendChild(frameBlock);
+      }
+    }
+
+    function resetImage(frameIndex, slotIndex) {
+      const img = document.getElementById(`photo${frameIndex}_${slotIndex}`);
+      // 드래그 인스턴스 해제
+      if (img.interact) {
+        img.interact.unset();
+        img.interact = null;
+      }
+      // 이미지 초기화
+      img.src = '';
+      img.style.transform = '';
+      img.dataset.x = '';
+      img.dataset.y = '';
+      const fileInput = document.getElementById(`fileInput${frameIndex}_${slotIndex}`);
+      if (fileInput) fileInput.value = "";
+      console.log(`프레임 ${frameIndex}의 이미지 ${slotIndex}번 초기화됨`);
+    }
+
+    function updateEngravingText(frameIndex, value) {
+      const customText = document.getElementById(`customText${frameIndex}`);
+      customText.textContent = value || '각인 위치';
+    }
+
+    function toggleEngraving(frameIndex, checked) {
+      const engravingInput = document.getElementById(`engraving${frameIndex}`);
+      const customText = document.getElementById(`customText${frameIndex}`);
+      engravingInput.style.display = checked ? 'block' : 'none';
+      customText.style.display = checked ? 'block' : 'none';
+      if (!checked) {
+        engravingInput.value = '';
+        customText.textContent = '각인 위치';
+      }
+    }
+
+    function loadImage(frameIndex, slotIndex, input) {
+      const file = input.files[0];
+      if (!file) {
+        console.warn(`파일이 선택되지 않았습니다 (프레임 ${frameIndex}, 슬롯 ${slotIndex})`);
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        console.error(`이미지 파일이 아닙니다 (프레임 ${frameIndex}, 슬롯 ${slotIndex})`);
+        return;
+      }
+
+      const reader = new FileReader();
+      const img = document.getElementById(`photo${frameIndex}_${slotIndex}`);
+
+      reader.onload = e => {
+        img.src = e.target.result;
+
+        /* ① 처음엔 칸을 꽉 채워서 보여준다 */
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.objectPosition = '50% 50%';   // 가운데 정렬
+        img.style.transform = '';                // 이전 이동 기록 지움
+
+        /* ② 이전 드래그 인스턴스가 있으면 해제 */
+        if (img.interact) { img.interact.unset(); }
+
+        /* ③ 드래그 기능 붙이기 */
+        const drag = interact(img).draggable({
+          /* 래퍼 밖으로 못 나가게 */
+          modifiers: [
+            interact.modifiers.restrictRect({
+              restriction: 'parent',   // parent == .photo-wrapper
+              endOnly: true
+            })
+          ],
+          listeners: {
+            start() { img.style.cursor = 'grabbing'; },
+            end()   { img.style.cursor = 'grab';     },
+            move(ev) {
+              const { dx, dy } = ev;
+              /* 현재 위치 값 (데이터 속성에 저장) */
+              const x = (parseFloat(img.dataset.x) || 0) + dx;
+              const y = (parseFloat(img.dataset.y) || 0) + dy;
+              img.dataset.x = x;
+              img.dataset.y = y;
+              img.style.transform = `translate(${x}px, ${y}px)`;   // 이동
+            }
+          }
+        });
+
+        /* ④ 다음 reset 때 해제할 수 있게 저장 */
+        img.interact = drag;
+
+        console.log(`프레임 ${frameIndex}의 이미지 ${slotIndex}번 로드 완료 ✅`);
+      };
+
+      reader.onerror = function() {
+        console.error(`프레임 ${frameIndex}의 이미지 ${slotIndex}번 로드 실패 ❌`);
+      };
+
+      try {
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error(`파일 읽기 오류 (프레임 ${frameIndex}, 슬롯 ${slotIndex}):`, error);
+      }
+    }
+
+    // 페이지 로드 시 초기화
+    window.onload = function() {
+      console.log('페이지 로드됨');
+    };
+  </script>
+</body>
+</html>
+    
